@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, globalShortcut } from 'electron'
+import { app, protocol, BrowserWindow, globalShortcut, dialog, ipcMain } from 'electron'
 import {
   createProtocol
   /* installVueDevtools */
@@ -21,17 +21,23 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: tru
 function createWindow() {
   // Create the browser window.
   window = new BrowserWindow({
-    width: 1600,
-    height: 1100,
+    width: 521,
+    height: 322,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: false
     }
   })
+
+  window.resizable = false
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     window.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
-    if (!process.env.IS_TEST) window.webContents.openDevTools()
+    if (!process.env.IS_TEST) {
+      window.webContents.openDevTools()
+      window.resizable = true
+    }
   } else {
     createProtocol('app')
     // Load the index.html when not in development
@@ -87,6 +93,12 @@ app.on('ready', async () => {
     console.log('command + y')
   })
   createWindow()
+
+  ipcMain.on('openMusicDialog', (event, arg) => {
+    console.log(arg)
+    const result = dialog.showOpenDialog(arg)
+    console.log(result)
+  })
 })
 
 // Exit cleanly on request from parent process in development mode.
