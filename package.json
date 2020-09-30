@@ -2,11 +2,12 @@
   "name": "music-player",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/background.ts",
   "scripts": {
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "electron:dev": "vue-cli-service electron:serve",
+    "electron:dev": "electron . && vue-cli-service build --watch --mode development",
     "electron:build": "vue-cli-service electron:build",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"

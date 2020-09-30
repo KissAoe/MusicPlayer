@@ -4,10 +4,10 @@
     <MusicPanel />
     <ControlInfo />
     <ControlPanel /> -->
-    <input type="file" title="请选择" webkitdirectory multiple>
-    <button @click="selectFile">选择文件</button>
-    <div>
-      123
+    <input type="file" title="请选择" @change="onSelectFile" webkitdirectory multiple>
+    <button @click="palyFile">播放音乐</button>
+    <div v-for="file in playList" :key="file.name">
+      <span> {{ file.path }}</span>
     </div>
   </div>
 </template>
@@ -19,8 +19,8 @@ import MusicPanel from '@/components/MusicPanel.vue'
 import ControlInfo from '@/components/ControlInfo.vue'
 import ControlPanel from '@/components/ControlPanel.vue'
 
-import { Howl } from 'howler'
 import { ipcRenderer, remote } from 'electron'
+import { Howl } from 'howler'
 
 export default Vue.extend({
   components: {
@@ -28,28 +28,51 @@ export default Vue.extend({
   },
   data () {
     return {
-      volume: 90
+      volume: 90,
+      playList: []
     }
   },
   methods: {
-    selectFile () {
-      const options = {
-        title: '请选择音乐所在的目录'
+    palyFile () {
+      // ipcRenderer.send('playMusic', '测试')
+
+      const sound = new Howl({
+        src: 'file:///Users/liyu/Downloads/待处理音乐/此生不换-青鸟飞鱼.flac',
+        autoplay: true,
+        onplay: function () {
+          console.log('onplay')
+        },
+        onload: function () {
+          console.log('onload')
+        },
+        onend: function () {
+          console.log('onend')
+        },
+        onpause: function () {
+          console.log('onpause')
+        },
+        onstop: function () {
+          console.log('onstop')
+        },
+        onseek: function () {
+          console.log('onseek')
+        }
+      })
+      console.log(sound)
+      const num = sound.play()
+      console.log(num)
+    },
+    onSelectFile (event: Event) {
+      if (event === null || event === undefined) {
+        return
       }
-      ipcRenderer.send('openMusicDialog', options)
-      // remote.dialog.showOpenDialog(options)
+      // @ts-ignore
+      this.playList = event.target.files
     }
   },
   mounted () {
     console.log(ipcRenderer)
     console.log(remote)
-    // console.log(shell)
-    // shell.beep()
-    // // const sound = new Howl({
-    // //   src: ['file:///Users/liyu/Downloads/待处理音乐/他一定很爱你-阿杜.flac']
-    // // })
-
-    // // sound.play()
   }
 })
 </script>

@@ -1,11 +1,13 @@
 'use strict'
 
 import { app, protocol, BrowserWindow, globalShortcut, dialog, ipcMain } from 'electron'
-import {
-  createProtocol
-  /* installVueDevtools */
-} from 'vue-cli-plugin-electron-builder/lib'
+import * as url from 'url'
+import * as path from 'path'
+
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import { dockMenu } from './Menu'
+import './service/MusicService'
+
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -29,19 +31,30 @@ function createWindow() {
     }
   })
 
-  window.resizable = false
+  window.resizable = true
+  // if (process.env.IS_TEST) {
+  //   window.resizable = true
+  // } else {
+  //   window.resizable = false
+  // }
 
+  // console.log(process.env.WEBPACK_DEV_SERVER_URL)
+
+  // const indexURL = url.format({
+  //   pathname: path.join(__dirname, 'public/index.html'),
+  //   protocol: 'file:',
+  //   slashes: true
+  // })
+  // window.loadURL(indexURL)
+  // window.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     window.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
-    if (!process.env.IS_TEST) {
-      window.webContents.openDevTools()
-      window.resizable = true
-    }
+    
   } else {
     createProtocol('app')
     // Load the index.html when not in development
-    window.loadURL('app://index.html')
+    window.loadURL('app://./index.html')
   }
 
   window.on('closed', () => {
@@ -89,16 +102,11 @@ app.on('ready', async () => {
 
   }
 
-  globalShortcut.register('CommandOrControl+Y', () => {
-    console.log('command + y')
+  globalShortcut.register('F12', () => {
+    // console.log('command + y')
+    window.webContents.openDevTools()
   })
   createWindow()
-
-  ipcMain.on('openMusicDialog', (event, arg) => {
-    console.log(arg)
-    const result = dialog.showOpenDialog(arg)
-    console.log(result)
-  })
 })
 
 // Exit cleanly on request from parent process in development mode.
