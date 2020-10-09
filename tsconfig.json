@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "strict": true,
+    "importHelpers": true,
+    "moduleResolution": "Node",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "render/*"
+      ]
+    },
+    "outDir": "dist"
+  },
+  "include": [
+    "render/**/**/*",
+    "electron/**/*",
+    "common/**/*",
+  ],
+  "exclude": [
+    "node_modules",
+    "webpack"
+  ]
+}
