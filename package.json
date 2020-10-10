@@ -3,17 +3,27 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
+  "main": "dist/js/background.js",
   "scripts": {
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "build:dev": "NODE_ENV=dev webpack --config webpack/webpack.base.conf.js",
     "build:prod": "NODE_ENV=prod webpack --config webpack/webpack.base.conf.js",
+    "pack:dev": "npm run build:dev && npm run pack",
+    "pack:prod": "npm run build:prod && npm run pack",
     "elec": "npm run build:dev && electron dist/js/main.js"
   },
   "build": {
-    "appId": "MusicPlayer",
-    "mac": {
-      "category": "com.heleeos.app.music-player"
+    "appId": "com.heleeos.app.music.player",
+    "productName": "MusicPlayer",
+    "asar": false,
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist_electron"
     }
   },
   "repository": {

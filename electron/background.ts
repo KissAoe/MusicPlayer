@@ -12,11 +12,11 @@ function createWindow () {
     }
   })
 
-  window.loadFile('../index.html')
+  window.loadFile('./dist/index.html')
 
   // 打开开发者工具
   // if (isDev()) {
-    // window.webContents.openDevTools()
+    window.webContents.openDevTools()
   // }
 }
 
