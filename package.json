@@ -6,8 +6,8 @@
   "scripts": {
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "build:dev": "NODE_ENV=dev webpack --config webpack/webpack.dev.conf.js",
-    "build:prod": "NODE_ENV=prod webpack --config webpack/webpack.prod.conf.js",
+    "build:dev": "NODE_ENV=dev webpack --config webpack/webpack.base.conf.js",
+    "build:prod": "NODE_ENV=prod webpack --config webpack/webpack.base.conf.js",
     "elec": "npm run build:dev && electron dist/js/main.js"
   },
   "build": {
