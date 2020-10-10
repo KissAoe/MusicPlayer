@@ -1,5 +1,3 @@
-'use struct'
-
 enum Env {
     Prod = 'prod',
     Test = 'test',
