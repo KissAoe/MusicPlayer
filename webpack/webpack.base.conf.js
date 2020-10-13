@@ -1,10 +1,15 @@
 const path = require('path')
 const cwp = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 const webpackMode = process.env.NODE_ENV === 'prod' ? 'production' : 'development'
 const webpackDevtool = process.env.NODE_ENV === 'prod' ? '' : 'cheap-module-eval-source-map'
 const isWatch = process.env.NODE_ENV === 'dev'
+const webpackAlias = {
+  '@': path.resolve(__dirname, '../rander'),
+  '$': path.resolve(__dirname, '../common')
+}
 
 const electronMain = {
   mode: webpackMode,
@@ -19,6 +24,7 @@ const electronMain = {
     publicPath: ''
   },
   resolve: {
+    alias: webpackAlias,
     extensions: ['.ts', '.json']
   },
   module: {
@@ -53,6 +59,7 @@ const electronRender = {
     publicPath: ''
   },
   resolve: {
+    alias: webpackAlias,
     extensions: ['.ts', '.json']
   },
   module: {
@@ -72,10 +79,15 @@ const electronRender = {
           'style-loader',
           'css-loader'
         ]
+      },
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader'
       }
     ]
   },
   plugins: [
+    new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
       title: ''
     })

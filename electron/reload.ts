@@ -1,22 +1,22 @@
 import { App, BrowserWindow } from 'electron'
-import watch from 'node-watch'
+// import watch from 'node-watch'
 import { isDev } from '../common/config'
+import * as fs from 'fs'
 
 
 const reloadIndex = (win: BrowserWindow) => {
   if (isDev()) {
-   
-    watch('dist/js', console.log)
-    // watch('dist/js', (event: EventType, filename) => {
-    //   console.log(`reload: ${event}, ${filename}`)
-    //   win.reload()
-    // })
+    // fs.watch('dist/js', console.log)
+    fs.watch('dist/js', (event, filename) => {
+      console.log(`reload: ${event}, ${filename}`)
+      win.reload()
+    })
   }
 }
 
 const relaunchApp = (app: App) => {
   if (isDev()) {
-    watch('dist/electron', (event, filename) => {
+    fs.watch('dist/electron', (event, filename) => {
       console.log(`relaunch: ${JSON.stringify(event)}, ${filename}`)
       // app.relaunch()
       // app.exit()
