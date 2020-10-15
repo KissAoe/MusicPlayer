@@ -65,24 +65,29 @@ const electronRender = {
   module: {
     rules: [
       {
+        test: /\.vue$/,
+        loader: 'vue-loader'
+      },
+      {
         test: /\.tsx?$/,
         loader: 'ts-loader'
       },
-      {
-        test: /\.js$/,
-        enforce: 'pre',
-        loader: 'source-map-loader'
-      },
+      // {
+      //   test: /\.js$/,
+      //   exclude: /(node_modules)/,
+      //   use: {
+      //     loader: 'babel-loader',
+      //     options: {
+      //       presets: ['@babel/preset-env']
+      //     }
+      //   }
+      // },
       {
         test: /\.css$/,
         use: [
           'style-loader',
           'css-loader'
         ]
-      },
-      {
-        test: /\.vue$/,
-        loader: 'vue-loader'
       }
     ]
   },
