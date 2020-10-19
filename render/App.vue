@@ -1,20 +1,35 @@
 <template>
   <div>
-    
-    <input type="file" multiple @change="changePlayList">
-    <p>{{ musicSeek }} / {{ musicDuration }}</p>
-    <!-- <button @click="init">初始化</button>
-    <button @click="play">播放</button>
-    <button @click="pause">暂停</button>
-    <button @click="flush">刷新</button>
-    <p>duration: {{ duration }}</p>
-    <p>state: {{ state }}</p> -->
+     <input type="file" multiple @change="changePlayList"><br/>
+    <div>
+      <p class="playing-music-title" v-if="playIndex > -1">{{ playIndex + 1 }}.{{ musicList[playIndex].name }}</p>
+    </div>
+    <div>
+      <input class="playing-music-progress" type="range" step="any" style="width:100%" min="0" 
+        v-if="playIndex > -1"
+        :value="processTime"
+        :max="musicList[playIndex].duration"
+        @mousedown="onDownMusicTime"
+        @mousemove="onMoveMusicTime"
+        @mouseup="onUpMusicTime">
+    </div>
 
-    <br/>
-    <div v-for="(file, index) in playlist">
-      <p>{{ index }}, {{ file.name }}</p>
-      <button @click="play(index)">播放</button>
-      <button @click="pause(index)">暂停</button>
+    <button @click="play()">播放</button>
+    <button @click="pause()">暂停</button>
+    <button @click="play(playIndex-1)">上一首</button>
+    <button @click="play(playIndex+1)">下一首</button>
+
+    <progress 
+      v-if="playIndex > -1"
+      :value="musicList[playIndex].time"
+      :max="musicList[playIndex].duration" style="width:100%"></progress>
+
+    <!-- <p v-if="playIndex > -1">{{ musicList[playIndex].time }} / {{ musicList[playIndex].duration }}</p> -->
+    <p v-if="playIndex > -1">{{ formatTime(musicList[playIndex].time) }}</p>
+
+    <div v-for="(music, index) in musicList">
+      <p>{{ index }}, {{ music.name }}</p>
+      <button @click="play(index)">播放{{ music.name }}</button>
     </div>
   </div>
 </template>
@@ -22,120 +37,162 @@
 <script>
 import * as _ from 'lodash'
 import { Howl } from 'howler'
+// import './style/App.less'
 
 export default {
   name: 'App',
   data() {
     return {
-      playlist: [],
-      playIndex: 0,
-
-      musicSeek: 0,
-      musicDuration: 0,
-      // music: '/Users/liyu/Downloads/临时/音乐/You Are Not Alone-Michael Jackson.flac',
-      // duration: '',
-      state: ''
+      musicList: [],
+      playIndex: -1,
+      mode: '', // 列表随机, 列表顺序
+      again: '', // 单曲循环, 列表循环, 不循环
+      processTime: 0,
+      controlProcess: false
     }
   },
   methods: {
     changePlayList(event) {
-      this.playlist = event.target.files
+      this.musicList = _.map(event.target.files, function(file) {
+        return {  
+          name: file.name,
+          path: file.path,
+          time: 0,
+          duration: 0,
+          sound: null
+        }
+      })
+      this.playIndex = 0
     },
-    init(musicList) {
-      if(musicList === null) {
-        musicList = [this.music]
-      }
-      
-      this.sound = howl
+    onDownMusicTime(event) {
+      this.controlProcess = true
     },
-    play(index) {
-      const music = this.playlist[index]
-      let sound
-      if(music.howl) {
-        sound = music.howl
-      } else {
-        sound = music.howl = new Howl({
-            src: music.path,
-            onplay: () => {
-              console.log(`play: ${music.name}`)
-              this.musicDuration = Math.round(sound.duration())
-              window.requestAnimationFrame(this.step)
-            },
-            onload: () => {
-              console.log(`load: ${music.name}`)
-            },
-            onend: () => {
-              console.log(`end: ${music.name}`)
-            },
-            onpause: () => {
-              console.log(`pause: ${music.name}`)
-            },
-            onstop: () => {
-              console.log(`stop: ${music.name}`)
-            },
-            onseek: () => {
-              console.log(`seek: ${music.name}`)
-              window.requestAnimationFrame(this.step)
-            }
-        });
-      }
-      sound.play()
-      this.playIndex = index
-      // if(this.sound === null) {
-      //   this.init()
-      // }
-      // if(this.cureentPlayId === null) {
-      //   this.cureentPlayId = this.sound.play();
-      // } else {
-      //   this.sound.play(this.cureentPlayId);
-      // }
-    },
-    pause(index) {
-      const music = this.playlist[index]
-      if(!music.howl) {
+    onMoveMusicTime(event) {
+      if(!this.controlProcess) {
         return
       }
-      music.howl.pause()
+      const value = event.target.value
+      this.processTime = value
     },
-    skipTo: function(index) {
-      const sound = this.playlist[this.playIndex].howl
+    onUpMusicTime(event) {
+      this.controlProcess = false
 
-      if (sound) {
-        sound.stop()
+      const value = event.target.value
+      this.musicList[this.playIndex].sound.seek(value)
+      this.musicList[this.playIndex].time = value
+    },
+    onClickMusicTime(event) {
+      const value = event.target.value
+      this.musicList[this.playIndex].sound.seek(value)
+      this.musicList[this.playIndex].time = value
+      this.processTime = value
+    },
+    onChangeMusicTime(event) {
+      // this.controlProcess = false
+    },
+    init(index) {
+      const music = this.musicList[index]
+      const sound = new Howl({
+          src: music.path,
+          onplay: () => {
+            console.log(`play: ${music.name}`)
+            // this.musicDuration = Math.round(sound.duration())
+            this.musicList[index].duration = sound.duration()
+            window.requestAnimationFrame(this.step)
+          },
+          onload: () => {
+            console.log(`load: ${music.name}`)
+          },
+          onend: () => {
+            this.play(this.playIndex + 1)
+            console.log(`end: ${music.name}`)
+          },
+          onpause: () => {
+            console.log(`pause: ${music.name}`)
+          },
+          onstop: () => {
+            console.log(`stop: ${music.name}`)
+          },
+          onseek: () => {
+            console.log(`seek: ${music.name}`)
+            // window.requestAnimationFrame(this.step)
+          }
+      });
+      return sound
+    },
+    play(index) {
+      // 全局开关
+      if(typeof(index) !== 'number') {
+        index = this.playIndex
       }
 
-      this.play(index)
-    },
-    step: function() {
-      const sound = this.playlist[this.playIndex].howl
+      // 控制范围
+      if(index < 0) {
+        index = 0
+      }
+      if(index >= this.musicList.length) {
+        index = this.musicList.length - 1
+      }
 
+      // 切换音乐
+      if(index !== this.playIndex) {
+        const sound = this.musicList[this.playIndex].sound
+        if(sound !== null && sound.playing()) {
+          sound.pause()
+          sound.seek(0)
+        }
+      }
+
+      // 获取音乐
+      let sound
+      if(this.musicList[index] && this.musicList[index].sound) {
+        sound = this.musicList[index].sound
+      } else {
+        sound = this.musicList[index].sound = this.init(index)
+      }
+
+      
+      if(!sound.playing()) {
+        // 播放
+        sound.play()
+        this.playIndex = index
+      }
+    },
+    pause(index) {
+      // 全局开关
+      if(typeof(index) !== 'number') {
+        index = this.playIndex
+      }
+
+      if(index < 0) {
+        return
+      }
+
+      const sound = this.musicList[index].sound
       if(!sound) {
         return
       }
-      const seek = sound.seek() || 0;
-
-      this.musicSeek = Math.round(seek)
-      if (sound.playing()) {
-        window.requestAnimationFrame(() => {
-          this.step();
-        });
+      sound.pause()
+    },
+    step: function() {
+      const sound = this.musicList[this.playIndex].sound
+      if(sound === null) {
+        return
       }
 
-      // // Determine our current seek position.
-      // var seek = sound.seek() || 0;
-      // timer.innerHTML = self.formatTime(Math.round(seek));
-      // progress.style.width = (((seek / sound.duration()) * 100) || 0) + '%';
-
-      // // If the sound is still playing, continue stepping.
-      // if (sound.playing()) {
-      //   requestAnimationFrame(self.step.bind(self));
-      // }
+      this.musicList[this.playIndex].time = sound.seek()
+      if(!this.controlProcess) {
+        this.processTime = sound.seek()
+      }
+      if (sound.playing()) {
+        window.requestAnimationFrame(() => this.step());
+      }
     },
     formatTime: function(secs) {
-      var minutes = Math.floor(secs / 60) || 0;
-      var seconds = (secs - minutes * 60) || 0;
+      const minutes = Math.floor(secs / 60) || 0;
+      const seconds = Math.round(secs - minutes * 60) || 0;
 
-      return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+      return `${minutes < 10 ? '0' : ''}${minutes} : ${seconds < 10 ? '0' : ''}${seconds}`
     }
   }
 }
